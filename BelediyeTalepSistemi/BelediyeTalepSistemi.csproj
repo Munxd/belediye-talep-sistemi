@@ -10,7 +10,6 @@
     <Folder Include="AI\" />
     <Folder Include="Helpers\" />
     <Folder Include="Docs\" />
-    <Folder Include="ViewModels\" />
     <Folder Include="Services\" />
     <Folder Include="Repositories\" />
   </ItemGroup>
