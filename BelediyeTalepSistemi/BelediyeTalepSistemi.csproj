@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="AI\" />
-    <Folder Include="Helpers\" />
     <Folder Include="Docs\" />
     <Folder Include="Services\" />
     <Folder Include="Repositories\" />
