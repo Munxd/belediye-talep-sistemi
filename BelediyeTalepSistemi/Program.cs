@@ -13,6 +13,7 @@ builder.Services.AddSession();
 
 
 var app = builder.Build();
+await SeedData.InitializeAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
