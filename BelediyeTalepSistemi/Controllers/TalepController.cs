@@ -18,6 +18,50 @@ namespace BelediyeTalepSistemi.Controllers
         }
 
         [RoleAuthorize(Roles.Vatandas)]
+        public async Task<IActionResult> Index()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var talepler = await _context.Talepler
+                .Include(t => t.Mudurluk)
+                .Include(t => t.TalepDurumu)
+                .Where(t => t.ApplicationUserId == userId.Value)
+                .OrderByDescending(t => t.OlusturulmaTarihi)
+                .ToListAsync();
+
+            return View(talepler);
+        }
+
+        [RoleAuthorize(Roles.Vatandas)]
+        public async Task<IActionResult> Details(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var talep = await _context.Talepler
+                .Include(t => t.Mudurluk)
+                .Include(t => t.TalepDurumu)
+                .Include(t => t.ApplicationUser)
+                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId.Value);
+
+            if (talep == null)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            return View(talep);
+        }
+
+        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> Create()
         {
             ViewBag.Mudurlukler = new SelectList(
