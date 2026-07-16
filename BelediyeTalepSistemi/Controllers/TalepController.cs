@@ -124,5 +124,134 @@ namespace BelediyeTalepSistemi.Controllers
 
             return RedirectToAction("Create");
         }
+
+        [RoleAuthorize(Roles.Vatandas)]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var talep = await _context.Talepler
+                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId.Value);
+
+            if (talep == null)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            ViewBag.Mudurlukler = new SelectList(
+                await _context.Mudurlukler.ToListAsync(),
+                "Id",
+                "MudurlukAdi",
+                talep.MudurlukId
+            );
+
+            var model = new TalepCreateViewModel
+            {
+                Baslik = talep.Baslik,
+                Aciklama = talep.Aciklama,
+                Kategori = talep.Kategori,
+                MudurlukId = talep.MudurlukId
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [RoleAuthorize(Roles.Vatandas)]
+        public async Task<IActionResult> Edit(int id, TalepCreateViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            ViewBag.Mudurlukler = new SelectList(
+                await _context.Mudurlukler.ToListAsync(),
+                "Id",
+                "MudurlukAdi",
+                model.MudurlukId
+            );
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var talep = await _context.Talepler
+                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId.Value);
+
+            if (talep == null)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            talep.Baslik = model.Baslik;
+            talep.Aciklama = model.Aciklama;
+            talep.Kategori = model.Kategori;
+            talep.MudurlukId = model.MudurlukId;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Talep başarıyla güncellendi.";
+
+            return RedirectToAction("Index");
+        }
+
+        [RoleAuthorize(Roles.Vatandas)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var talep = await _context.Talepler
+                .Include(t => t.Mudurluk)
+                .Include(t => t.TalepDurumu)
+                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId.Value);
+
+            if (talep == null)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            return View(talep);
+        }
+
+        [HttpPost]
+        [RoleAuthorize(Roles.Vatandas)]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var talep = await _context.Talepler
+                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId.Value);
+
+            if (talep == null)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            _context.Talepler.Remove(talep);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Talep başarıyla silindi.";
+
+            return RedirectToAction("Index");
+        }
     }
 }

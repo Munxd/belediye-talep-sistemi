@@ -1,0 +1,41 @@
+﻿@model BelediyeTalepSistemi.Models.Talep
+
+@{
+    ViewData["Title"] = "Talep Sil";
+}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+            <h3>Talep Sil</h3>
+        </div>
+
+        <div class="card-body">
+            <div class="alert alert-warning">
+                Bu talebi silmek istediğinizden emin misiniz?
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Başlık</dt>
+                <dd class="col-sm-9">@Model.Baslik</dd>
+
+                <dt class="col-sm-3">Açıklama</dt>
+                <dd class="col-sm-9">@Model.Aciklama</dd>
+
+                <dt class="col-sm-3">Kategori</dt>
+                <dd class="col-sm-9">@Model.Kategori</dd>
+
+                <dt class="col-sm-3">Müdürlük</dt>
+                <dd class="col-sm-9">@Model.Mudurluk?.MudurlukAdi</dd>
+
+                <dt class="col-sm-3">Durum</dt>
+                <dd class="col-sm-9">@Model.TalepDurumu?.DurumAdi</dd>
+            </dl>
+
+            <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+                <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                <a asp-controller="Talep" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+            </form>
+        </div>
+    </div>
+</div>
