@@ -1,10 +1,91 @@
-﻿@{
+﻿@model List<BelediyeTalepSistemi.Models.Talep>
+
+@{
     ViewData["Title"] = "Yönetici Paneli";
 }
 
 <div class="container mt-5">
-    <div class="alert alert-success text-center">
-        <h3>Yönetici Paneli</h3>
-        <p>Bu sayfa yalnızca yönetici rolündeki kullanıcılar tarafından görüntülenebilir.</p>
+    <h2>Yönetici Paneli</h2>
+    <p class="text-muted">Sistemdeki genel talep ve kullanıcı bilgileri aşağıda gösterilmektedir.</p>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>Toplam Talep</h5>
+                    <h3>@ViewBag.ToplamTalep</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>Yeni Talep</h5>
+                    <h3>@ViewBag.YeniTalep</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>Vatandaş</h5>
+                    <h3>@ViewBag.ToplamVatandas</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>Personel</h5>
+                    <h3>@ViewBag.ToplamPersonel</h3>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <h4>Son Talepler</h4>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Sistemde henüz oluşturulmuş talep bulunmamaktadır.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Vatandaş</th>
+                    <th>Başlık</th>
+                    <th>Kategori</th>
+                    <th>Müdürlük</th>
+                    <th>Durum</th>
+                    <th>Tarih</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var talep in Model)
+                {
+                    <tr>
+                        <td>@talep.ApplicationUser?.AdSoyad</td>
+                        <td>@talep.Baslik</td>
+                        <td>@talep.Kategori</td>
+                        <td>@talep.Mudurluk?.MudurlukAdi</td>
+                        <td>@talep.TalepDurumu?.DurumAdi</td>
+                        <td>@talep.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            <a asp-controller="Yonetici" asp-action="Details" asp-route-id="@talep.Id" class="btn btn-sm btn-info">
+                                Detay
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>

@@ -1,0 +1,43 @@
+﻿@model BelediyeTalepSistemi.Models.Talep
+
+@{
+    ViewData["Title"] = "Talep Detayı";
+}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header">
+            <h3>Yönetici Talep Detayı</h3>
+        </div>
+
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Vatandaş</dt>
+                <dd class="col-sm-9">@Model.ApplicationUser?.AdSoyad</dd>
+
+                <dt class="col-sm-3">Başlık</dt>
+                <dd class="col-sm-9">@Model.Baslik</dd>
+
+                <dt class="col-sm-3">Açıklama</dt>
+                <dd class="col-sm-9">@Model.Aciklama</dd>
+
+                <dt class="col-sm-3">Kategori</dt>
+                <dd class="col-sm-9">@Model.Kategori</dd>
+
+                <dt class="col-sm-3">Müdürlük</dt>
+                <dd class="col-sm-9">@Model.Mudurluk?.MudurlukAdi</dd>
+
+                <dt class="col-sm-3">Durum</dt>
+                <dd class="col-sm-9">@Model.TalepDurumu?.DurumAdi</dd>
+
+                <dt class="col-sm-3">Öncelik</dt>
+                <dd class="col-sm-9">@Model.OncelikSeviyesi</dd>
+
+                <dt class="col-sm-3">Oluşturulma Tarihi</dt>
+                <dd class="col-sm-9">@Model.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</dd>
+            </dl>
+
+            <a asp-controller="Yonetici" asp-action="Index" class="btn btn-secondary">Panele Dön</a>
+        </div>
+    </div>
+</div>
