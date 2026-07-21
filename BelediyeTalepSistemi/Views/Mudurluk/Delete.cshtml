@@ -1,0 +1,35 @@
+﻿@model BelediyeTalepSistemi.Models.Mudurluk
+
+@{
+    ViewData["Title"] = "Müdürlük Sil";
+}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+            <h3>Müdürlük Sil</h3>
+        </div>
+
+        <div class="card-body">
+            <div class="alert alert-warning">
+                Bu müdürlüğü silmek istediğinizden emin misiniz?
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Müdürlük Adı</dt>
+                <dd class="col-sm-9">@Model.MudurlukAdi</dd>
+
+                <dt class="col-sm-3">Açıklama</dt>
+                <dd class="col-sm-9">@Model.Aciklama</dd>
+
+                <dt class="col-sm-3">Bağlı Talep Sayısı</dt>
+                <dd class="col-sm-9">@Model.Talepler.Count</dd>
+            </dl>
+
+            <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+                <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                <a asp-controller="Mudurluk" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+            </form>
+        </div>
+    </div>
+</div>

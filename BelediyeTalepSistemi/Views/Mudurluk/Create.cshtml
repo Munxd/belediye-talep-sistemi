@@ -1,0 +1,39 @@
+﻿@model BelediyeTalepSistemi.Models.Mudurluk
+
+@{
+    ViewData["Title"] = "Müdürlük Ekle";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header text-center">
+                <h3>Yeni Müdürlük Ekle</h3>
+            </div>
+
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="MudurlukAdi" class="form-label">Müdürlük Adı</label>
+                        <input asp-for="MudurlukAdi" class="form-control" />
+                        <span asp-validation-for="MudurlukAdi" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Aciklama" class="form-label">Açıklama</label>
+                        <textarea asp-for="Aciklama" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Aciklama" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Kaydet</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a asp-controller="Mudurluk" asp-action="Index">Müdürlük Listesine Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

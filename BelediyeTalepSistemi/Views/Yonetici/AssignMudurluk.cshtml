@@ -1,0 +1,31 @@
+﻿@model BelediyeTalepSistemi.Models.Talep
+
+@{
+    ViewData["Title"] = "Müdürlük Ata";
+}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header">
+            <h3>Müdürlük Ata</h3>
+        </div>
+
+        <div class="card-body">
+            <p><strong>Talep Başlığı:</strong> @Model.Baslik</p>
+            <p><strong>Vatandaş:</strong> @Model.ApplicationUser?.AdSoyad</p>
+            <p><strong>Mevcut Müdürlük:</strong> @Model.Mudurluk?.MudurlukAdi</p>
+
+            <form asp-action="AssignMudurluk" asp-route-id="@Model.Id" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Yeni Müdürlük</label>
+                    <select name="mudurlukId" class="form-control" asp-items="ViewBag.Mudurlukler">
+                        <option value="">Müdürlük seçiniz</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-warning">Müdürlüğü Güncelle</button>
+                <a asp-controller="Yonetici" asp-action="Index" class="btn btn-secondary">Panele Dön</a>
+            </form>
+        </div>
+    </div>
+</div>
