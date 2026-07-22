@@ -3,6 +3,7 @@ using BelediyeTalepSistemi.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using BelediyeTalepSistemi.ViewModels;
 
 namespace BelediyeTalepSistemi.Controllers
 {
@@ -38,6 +39,51 @@ namespace BelediyeTalepSistemi.Controllers
                 .ToListAsync();
 
             return View(talepler);
+        }
+
+        public async Task<IActionResult> Dashboard()
+        {
+            var talepler = await _context.Talepler
+                .Include(t => t.Mudurluk)
+                .Include(t => t.TalepDurumu)
+                .ToListAsync();
+
+            var model = new DashboardViewModel
+            {
+                ToplamTalep = talepler.Count,
+                YeniTalep = talepler.Count(t => t.TalepDurumu != null && t.TalepDurumu.DurumAdi == "Yeni"),
+                InceleniyorTalep = talepler.Count(t => t.TalepDurumu != null && t.TalepDurumu.DurumAdi == "İnceleniyor"),
+                TamamlananTalep = talepler.Count(t => t.TalepDurumu != null && t.TalepDurumu.DurumAdi == "Tamamlandı"),
+
+                MudurlukDagilimi = talepler
+                    .GroupBy(t => t.Mudurluk != null ? t.Mudurluk.MudurlukAdi : "Belirtilmemiş")
+                    .Select(g => new DashboardChartItem
+                    {
+                        Ad = g.Key,
+                        Sayi = g.Count()
+                    })
+                    .ToList(),
+
+                KategoriDagilimi = talepler
+                    .GroupBy(t => t.Kategori)
+                    .Select(g => new DashboardChartItem
+                    {
+                        Ad = g.Key,
+                        Sayi = g.Count()
+                    })
+                    .ToList(),
+
+                DurumDagilimi = talepler
+                    .GroupBy(t => t.TalepDurumu != null ? t.TalepDurumu.DurumAdi : "Belirtilmemiş")
+                    .Select(g => new DashboardChartItem
+                    {
+                        Ad = g.Key,
+                        Sayi = g.Count()
+                    })
+                    .ToList()
+            };
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int id)

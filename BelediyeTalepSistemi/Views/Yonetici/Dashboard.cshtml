@@ -1,0 +1,128 @@
+﻿@model BelediyeTalepSistemi.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var maxMudurluk = Model.MudurlukDagilimi.Any() ? Model.MudurlukDagilimi.Max(x => x.Sayi) : 1;
+    var maxKategori = Model.KategoriDagilimi.Any() ? Model.KategoriDagilimi.Max(x => x.Sayi) : 1;
+    var maxDurum = Model.DurumDagilimi.Any() ? Model.DurumDagilimi.Max(x => x.Sayi) : 1;
+}
+
+<div class="container mt-5">
+    <h2>Dashboard</h2>
+    <p class="text-muted">Sistemdeki talep durumları ve dağılımları aşağıda gösterilmektedir.</p>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>Toplam Talep</h5>
+                    <h3>@Model.ToplamTalep</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>Yeni</h5>
+                    <h3>@Model.YeniTalep</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>İnceleniyor</h5>
+                    <h3>@Model.InceleniyorTalep</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5>Tamamlandı</h5>
+                    <h3>@Model.TamamlananTalep</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5>Müdürlüklere Göre Talep Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model.MudurlukDagilimi)
+                    {
+                        var oran = (item.Sayi * 100) / maxMudurluk;
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>@item.Ad</span>
+                                <strong>@item.Sayi</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" style="width:@oran%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5>Kategorilere Göre Talep Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model.KategoriDagilimi)
+                    {
+                        var oran = (item.Sayi * 100) / maxKategori;
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>@item.Ad</span>
+                                <strong>@item.Sayi</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width:@oran%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5>Duruma Göre Talep Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model.DurumDagilimi)
+                    {
+                        var oran = (item.Sayi * 100) / maxDurum;
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>@item.Ad</span>
+                                <strong>@item.Sayi</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width:@oran%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a asp-controller="Yonetici" asp-action="Index" class="btn btn-secondary">Yönetici Paneline Dön</a>
+</div>
