@@ -11,6 +11,20 @@
         </div>
 
         <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
             <dl class="row">
                 <dt class="col-sm-3">Vatandaş</dt>
                 <dd class="col-sm-9">@Model.ApplicationUser?.AdSoyad</dd>
@@ -27,7 +41,7 @@
                 <dt class="col-sm-3">Müdürlük</dt>
                 <dd class="col-sm-9">@Model.Mudurluk?.MudurlukAdi</dd>
 
-                <dt class="col-sm-3">Durum</dt>
+                <dt class="col-sm-3">Mevcut Durum</dt>
                 <dd class="col-sm-9">@Model.TalepDurumu?.DurumAdi</dd>
 
                 <dt class="col-sm-3">Öncelik</dt>
@@ -37,7 +51,21 @@
                 <dd class="col-sm-9">@Model.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</dd>
             </dl>
 
-            <a asp-controller="Personel" asp-action="Index" class="btn btn-secondary">Panele Dön</a>
+            <hr />
+
+            <h5>Durum Güncelle</h5>
+
+            <form asp-controller="Personel" asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Yeni Durum</label>
+                    <select name="talepDurumuId" class="form-control" asp-items="ViewBag.Durumlar">
+                        <option value="">Durum seçiniz</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-warning">Durumu Güncelle</button>
+                <a asp-controller="Personel" asp-action="Index" class="btn btn-secondary">Panele Dön</a>
+            </form>
         </div>
     </div>
 </div>

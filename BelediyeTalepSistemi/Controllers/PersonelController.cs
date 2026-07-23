@@ -1,6 +1,7 @@
 ﻿using BelediyeTalepSistemi.Data;
 using BelediyeTalepSistemi.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace BelediyeTalepSistemi.Controllers
@@ -40,7 +41,42 @@ namespace BelediyeTalepSistemi.Controllers
                 return NotFound();
             }
 
+            ViewBag.Durumlar = new SelectList(
+                await _context.TalepDurumlari.ToListAsync(),
+                "Id",
+                "DurumAdi",
+                talep.TalepDurumuId
+            );
+
             return View(talep);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateStatus(int id, int talepDurumuId)
+        {
+            var talep = await _context.Talepler.FindAsync(id);
+
+            if (talep == null)
+            {
+                return NotFound();
+            }
+
+            var durumVarMi = await _context.TalepDurumlari
+                .AnyAsync(d => d.Id == talepDurumuId);
+
+            if (!durumVarMi)
+            {
+                TempData["ErrorMessage"] = "Seçilen durum bulunamadı.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            talep.TalepDurumuId = talepDurumuId;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Talep durumu başarıyla güncellendi.";
+
+            return RedirectToAction("Details", new { id });
         }
     }
 }

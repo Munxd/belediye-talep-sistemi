@@ -1,8 +1,66 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
+
+    var adSoyad = Context.Session.GetString("AdSoyad");
+    var rol = Context.Session.GetString("Rol");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (adSoyad == null)
+{
+    <div class="text-center mt-5">
+        <h1 class="display-4">Belediye Talep ve Şikâyet Sistemi</h1>
+        <p class="lead">Sisteme giriş yaparak talep ve şikâyetlerinizi oluşturabilirsiniz.</p>
+
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Giriş Yap</a>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">Kayıt Ol</a>
+    </div>
+}
+else if (rol == "Vatandas")
+{
+    <div class="container mt-5">
+        <h2>Hoş geldiniz, @adSoyad</h2>
+        <p class="text-muted">Talep ve şikâyet işlemlerinizi aşağıdaki alanlardan yönetebilirsiniz.</p>
+
+        <div class="row mt-4 justify-content-center">
+            <div class="col-md-4 mb-3">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <h4>Talep Oluştur</h4>
+                        <p>Yeni bir talep veya şikâyet kaydı oluşturabilirsiniz.</p>
+                        <a asp-controller="Talep" asp-action="Create" class="btn btn-primary">Talep Oluştur</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <h4>Taleplerim</h4>
+                        <p>Oluşturduğunuz talepleri görüntüleyebilir ve durumlarını takip edebilirsiniz.</p>
+                        <a asp-controller="Talep" asp-action="Index" class="btn btn-success">Taleplerimi Gör</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (rol == "Personel")
+{
+    <div class="container mt-5">
+        <h2>Personel Ana Sayfası</h2>
+        <p class="text-muted">Size gelen vatandaş taleplerini personel panelinden inceleyebilirsiniz.</p>
+
+        <a asp-controller="Personel" asp-action="Index" class="btn btn-primary">Personel Paneline Git</a>
+    </div>
+}
+else if (rol == "Yonetici")
+{
+    <div class="container mt-5">
+        <h2>Yönetici Ana Sayfası</h2>
+        <p class="text-muted">Sistemdeki talepleri, müdürlükleri ve raporları yönetebilirsiniz.</p>
+
+        <a asp-controller="Yonetici" asp-action="Index" class="btn btn-primary">Yönetici Paneli</a>
+        <a asp-controller="Yonetici" asp-action="Dashboard" class="btn btn-success">Dashboard</a>
+        <a asp-controller="Mudurluk" asp-action="Index" class="btn btn-warning">Müdürlük Yönetimi</a>
+    </div>
+}
