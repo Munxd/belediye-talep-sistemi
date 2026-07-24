@@ -5,19 +5,22 @@ using BelediyeTalepSistemi.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace BelediyeTalepSistemi.Controllers
 {
+    [RoleAuthorize(Roles.Vatandas)]
     public class TalepController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public TalepController(ApplicationDbContext context)
+        public TalepController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
-        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> Index()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -37,7 +40,6 @@ namespace BelediyeTalepSistemi.Controllers
             return View(talepler);
         }
 
-        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> Details(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -48,9 +50,9 @@ namespace BelediyeTalepSistemi.Controllers
             }
 
             var talep = await _context.Talepler
+                .Include(t => t.ApplicationUser)
                 .Include(t => t.Mudurluk)
                 .Include(t => t.TalepDurumu)
-                .Include(t => t.ApplicationUser)
                 .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId.Value);
 
             if (talep == null)
@@ -61,34 +63,15 @@ namespace BelediyeTalepSistemi.Controllers
             return View(talep);
         }
 
-        [RoleAuthorize(Roles.Vatandas)]
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            ViewBag.Mudurlukler = new SelectList(
-                await _context.Mudurlukler.ToListAsync(),
-                "Id",
-                "MudurlukAdi"
-            );
-
+            ViewBag.Mudurlukler = new SelectList(_context.Mudurlukler.ToList(), "Id", "MudurlukAdi");
             return View();
         }
 
         [HttpPost]
-        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> Create(TalepCreateViewModel model)
         {
-            ViewBag.Mudurlukler = new SelectList(
-                await _context.Mudurlukler.ToListAsync(),
-                "Id",
-                "MudurlukAdi",
-                model.MudurlukId
-            );
-
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
             var userId = HttpContext.Session.GetInt32("UserId");
 
             if (userId == null)
@@ -96,14 +79,23 @@ namespace BelediyeTalepSistemi.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Mudurlukler = new SelectList(_context.Mudurlukler.ToList(), "Id", "MudurlukAdi");
+                return View(model);
+            }
+
             var yeniDurum = await _context.TalepDurumlari
-                .FirstOrDefaultAsync(x => x.DurumAdi == "Yeni");
+                .FirstOrDefaultAsync(d => d.DurumAdi == "Yeni");
 
             if (yeniDurum == null)
             {
-                ModelState.AddModelError("", "Talep durumu bulunamadı.");
+                TempData["ErrorMessage"] = "Talep durumu bulunamadı.";
+                ViewBag.Mudurlukler = new SelectList(_context.Mudurlukler.ToList(), "Id", "MudurlukAdi");
                 return View(model);
             }
+
+            string? fotografYolu = await FotografKaydet(model.Fotograf);
 
             var talep = new Talep
             {
@@ -114,7 +106,11 @@ namespace BelediyeTalepSistemi.Controllers
                 TalepDurumuId = yeniDurum.Id,
                 ApplicationUserId = userId.Value,
                 OncelikSeviyesi = "Orta",
-                OlusturulmaTarihi = DateTime.Now
+                OlusturulmaTarihi = DateTime.Now,
+                AcikAdres = model.AcikAdres,
+                Enlem = KonumDegeriCevir(model.Enlem),
+                Boylam = KonumDegeriCevir(model.Boylam),
+                FotografYolu = fotografYolu
             };
 
             _context.Talepler.Add(talep);
@@ -122,10 +118,9 @@ namespace BelediyeTalepSistemi.Controllers
 
             TempData["SuccessMessage"] = "Talebiniz başarıyla oluşturuldu.";
 
-            return RedirectToAction("Create");
+            return RedirectToAction("Index");
         }
 
-        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> Edit(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -143,26 +138,23 @@ namespace BelediyeTalepSistemi.Controllers
                 return RedirectToAction("AccessDenied", "Account");
             }
 
-            ViewBag.Mudurlukler = new SelectList(
-                await _context.Mudurlukler.ToListAsync(),
-                "Id",
-                "MudurlukAdi",
-                talep.MudurlukId
-            );
-
             var model = new TalepCreateViewModel
             {
                 Baslik = talep.Baslik,
                 Aciklama = talep.Aciklama,
                 Kategori = talep.Kategori,
-                MudurlukId = talep.MudurlukId
+                MudurlukId = talep.MudurlukId,
+                AcikAdres = talep.AcikAdres ?? string.Empty,
+                Enlem = talep.Enlem?.ToString(CultureInfo.InvariantCulture),
+                Boylam = talep.Boylam?.ToString(CultureInfo.InvariantCulture)
             };
+
+            ViewBag.Mudurlukler = new SelectList(_context.Mudurlukler.ToList(), "Id", "MudurlukAdi", talep.MudurlukId);
 
             return View(model);
         }
 
         [HttpPost]
-        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> Edit(int id, TalepCreateViewModel model)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -172,15 +164,9 @@ namespace BelediyeTalepSistemi.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            ViewBag.Mudurlukler = new SelectList(
-                await _context.Mudurlukler.ToListAsync(),
-                "Id",
-                "MudurlukAdi",
-                model.MudurlukId
-            );
-
             if (!ModelState.IsValid)
             {
+                ViewBag.Mudurlukler = new SelectList(_context.Mudurlukler.ToList(), "Id", "MudurlukAdi", model.MudurlukId);
                 return View(model);
             }
 
@@ -196,6 +182,16 @@ namespace BelediyeTalepSistemi.Controllers
             talep.Aciklama = model.Aciklama;
             talep.Kategori = model.Kategori;
             talep.MudurlukId = model.MudurlukId;
+            talep.AcikAdres = model.AcikAdres;
+            talep.Enlem = KonumDegeriCevir(model.Enlem);
+            talep.Boylam = KonumDegeriCevir(model.Boylam);
+
+            string? yeniFotografYolu = await FotografKaydet(model.Fotograf);
+
+            if (yeniFotografYolu != null)
+            {
+                talep.FotografYolu = yeniFotografYolu;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -204,7 +200,6 @@ namespace BelediyeTalepSistemi.Controllers
             return RedirectToAction("Index");
         }
 
-        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> Delete(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -228,7 +223,6 @@ namespace BelediyeTalepSistemi.Controllers
         }
 
         [HttpPost]
-        [RoleAuthorize(Roles.Vatandas)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -252,6 +246,56 @@ namespace BelediyeTalepSistemi.Controllers
             TempData["SuccessMessage"] = "Talep başarıyla silindi.";
 
             return RedirectToAction("Index");
+        }
+
+        private double? KonumDegeriCevir(string? deger)
+        {
+            if (string.IsNullOrWhiteSpace(deger))
+            {
+                return null;
+            }
+
+            deger = deger.Replace(",", ".");
+
+            if (double.TryParse(deger, NumberStyles.Any, CultureInfo.InvariantCulture, out double sonuc))
+            {
+                return sonuc;
+            }
+
+            return null;
+        }
+
+        private async Task<string?> FotografKaydet(IFormFile? fotograf)
+        {
+            if (fotograf == null || fotograf.Length == 0)
+            {
+                return null;
+            }
+
+            var izinliUzantilar = new[] { ".jpg", ".jpeg", ".png" };
+            var uzanti = Path.GetExtension(fotograf.FileName).ToLower();
+
+            if (!izinliUzantilar.Contains(uzanti))
+            {
+                return null;
+            }
+
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "talepler");
+
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var dosyaAdi = Guid.NewGuid().ToString() + uzanti;
+            var dosyaYolu = Path.Combine(uploadsFolder, dosyaAdi);
+
+            using (var stream = new FileStream(dosyaYolu, FileMode.Create))
+            {
+                await fotograf.CopyToAsync(stream);
+            }
+
+            return "/uploads/talepler/" + dosyaAdi;
         }
     }
 }

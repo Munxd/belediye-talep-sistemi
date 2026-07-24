@@ -4,58 +4,104 @@
     ViewData["Title"] = "Talep Oluştur";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-7">
-        <div class="card shadow">
-            <div class="card-header text-center">
-                <h3>Talep / Şikâyet Oluştur</h3>
-            </div>
+<div class="container mt-5">
+    <div class="card shadow mx-auto" style="max-width: 600px;">
+        <div class="card-header text-center">
+            <h3>Talep / Şikâyet Oluştur</h3>
+        </div>
 
-            <div class="card-body">
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success">
-                        @TempData["SuccessMessage"]
+        <div class="card-body">
+            <form asp-controller="Talep" asp-action="Create" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label asp-for="Baslik" class="form-label">Başlık</label>
+                    <input asp-for="Baslik" class="form-control" />
+                    <span asp-validation-for="Baslik" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Aciklama" class="form-label">Açıklama</label>
+                    <textarea asp-for="Aciklama" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Aciklama" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Kategori" class="form-label">Kategori</label>
+                    <select asp-for="Kategori" class="form-control">
+                        <option value="">Kategori seçiniz</option>
+                        <option value="Şikâyet">Şikâyet</option>
+                        <option value="Talep">Talep</option>
+                        <option value="Öneri">Öneri</option>
+                    </select>
+                    <span asp-validation-for="Kategori" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MudurlukId" class="form-label">Müdürlük</label>
+                    <select asp-for="MudurlukId" class="form-control" asp-items="ViewBag.Mudurlukler">
+                        <option value="">Müdürlük seçiniz</option>
+                    </select>
+                    <span asp-validation-for="MudurlukId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AcikAdres" class="form-label">Açık Adres</label>
+                    <textarea asp-for="AcikAdres" class="form-control" rows="3" placeholder="Mahalle, cadde, sokak ve bina çevresi gibi bilgileri yazınız."></textarea>
+                    <span asp-validation-for="AcikAdres" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Konum Bilgisi</label>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <input asp-for="Enlem" type="text" class="form-control" placeholder="Enlem" readonly />
+                        </div>
+
+                        <div class="col-md-6 mb-2">
+                            <input asp-for="Boylam" type="text" class="form-control" placeholder="Boylam" readonly />
+                        </div>
                     </div>
-                }
 
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="konumAl()">
+                        Konumumu Al
+                    </button>
 
-                    <div class="mb-3">
-                        <label asp-for="Baslik" class="form-label">Başlık</label>
-                        <input asp-for="Baslik" class="form-control" />
-                        <span asp-validation-for="Baslik" class="text-danger"></span>
-                    </div>
+                    <small class="text-muted d-block mt-2">
+                        Konum bilgisi, talebin ilgili ekipler tarafından daha kolay incelenmesi için kullanılacaktır.
+                    </small>
+                </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Aciklama" class="form-label">Açıklama</label>
-                        <textarea asp-for="Aciklama" class="form-control" rows="4"></textarea>
-                        <span asp-validation-for="Aciklama" class="text-danger"></span>
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="Fotograf" class="form-label">Fotoğraf Ekle</label>
+                    <input asp-for="Fotograf" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
+                    <small class="text-muted">İsteğe bağlı olarak JPG veya PNG formatında fotoğraf ekleyebilirsiniz.</small>
+                </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Kategori" class="form-label">Kategori</label>
-                        <select asp-for="Kategori" class="form-control">
-                            <option value="">Kategori seçiniz</option>
-                            <option value="Şikâyet">Şikâyet</option>
-                            <option value="Talep">Talep</option>
-                            <option value="Öneri">Öneri</option>
-                        </select>
-                        <span asp-validation-for="Kategori" class="text-danger"></span>
-                    </div>
+                <button type="submit" class="btn btn-primary w-100">Talep Oluştur</button>
 
-                    <div class="mb-3">
-                        <label asp-for="MudurlukId" class="form-label">Müdürlük</label>
-                        <select asp-for="MudurlukId" class="form-control" asp-items="ViewBag.Mudurlukler">
-                            <option value="">Müdürlük seçiniz</option>
-                        </select>
-                        <span asp-validation-for="MudurlukId" class="text-danger"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Talep Oluştur</button>
-                </form>
-            </div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary w-100 mt-2">
+                    Ana Sayfaya Dön
+                </a>
+            </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function konumAl() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    document.getElementById("Enlem").value = position.coords.latitude;
+                    document.getElementById("Boylam").value = position.coords.longitude;
+                }, function () {
+                    alert("Konum bilgisi alınamadı. Tarayıcıdan konum izni vermeniz gerekiyor.");
+                });
+            } else {
+                alert("Tarayıcınız konum özelliğini desteklemiyor.");
+            }
+        }
+    </script>
+}

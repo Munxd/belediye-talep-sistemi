@@ -22,5 +22,13 @@
 
         public int TalepDurumuId { get; set; }
         public TalepDurumu? TalepDurumu { get; set; }
+
+        public string? AcikAdres { get; set; }
+
+        public double? Enlem { get; set; }
+
+        public double? Boylam { get; set; }
+
+        public string? FotografYolu { get; set; }
     }
 }

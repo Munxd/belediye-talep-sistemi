@@ -30,11 +30,52 @@
                 <dt class="col-sm-3">Öncelik</dt>
                 <dd class="col-sm-9">@Model.OncelikSeviyesi</dd>
 
+                <dt class="col-sm-3">Açık Adres</dt>
+                <dd class="col-sm-9">
+                    @if (!string.IsNullOrEmpty(Model.AcikAdres))
+                    {
+                        @Model.AcikAdres
+                    }
+                    else
+                    {
+                        <span class="text-muted">Adres bilgisi girilmemiş.</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-3">Konum</dt>
+                <dd class="col-sm-9">
+                    @if (Model.Enlem != null && Model.Boylam != null)
+                    {
+                        <span>Enlem: @Model.Enlem</span>
+                        <br />
+                        <span>Boylam: @Model.Boylam</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Konum bilgisi bulunmuyor.</span>
+                    }
+                </dd>
+
                 <dt class="col-sm-3">Oluşturulma Tarihi</dt>
                 <dd class="col-sm-9">@Model.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</dd>
             </dl>
 
+            @if (!string.IsNullOrEmpty(Model.FotografYolu))
+            {
+                <hr />
+
+                <h5>Eklenen Fotoğraf</h5>
+
+                <img src="@Model.FotografYolu"
+                     class="img-fluid rounded shadow-sm"
+                     style="max-width: 400px;"
+                     alt="Talep fotoğrafı" />
+            }
+
+            <hr />
+
             <a asp-controller="Talep" asp-action="Index" class="btn btn-secondary">Taleplerime Dön</a>
+            <a asp-controller="Talep" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Düzenle</a>
         </div>
     </div>
 </div>
