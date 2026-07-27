@@ -1,7 +1,25 @@
 ﻿@model BelediyeTalepSistemi.Models.Talep
+@using System.Globalization
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "Talep Detayı";
+
+    var enlem = Model.Enlem?.ToString(CultureInfo.InvariantCulture);
+    var boylam = Model.Boylam?.ToString(CultureInfo.InvariantCulture);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        #personelMap {
+            height: 350px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
 }
 
 <div class="container mt-5">
@@ -89,6 +107,14 @@
                      alt="Talep fotoğrafı" />
             }
 
+            @if (Model.Enlem != null && Model.Boylam != null)
+            {
+                <hr />
+
+                <h5>Talep Konumu</h5>
+                <div id="personelMap"></div>
+            }
+
             <hr />
 
             <h5>Durum Güncelle</h5>
@@ -107,3 +133,33 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @if (Model.Enlem != null && Model.Boylam != null)
+    {
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+        <script>
+            var enlem = parseFloat("@enlem");
+            var boylam = parseFloat("@boylam");
+
+            var baslik = @Html.Raw(JsonSerializer.Serialize(Model.Baslik));
+            var adres = @Html.Raw(JsonSerializer.Serialize(Model.AcikAdres));
+
+            var map = L.map('personelMap').setView([enlem, boylam], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            L.circleMarker([enlem, boylam], {
+            radius: 9,
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.8
+            }).addTo(map)
+            .bindPopup("<b>" + baslik + "</b><br/>" + adres)
+            .openPopup();
+        </script>
+    }
+}

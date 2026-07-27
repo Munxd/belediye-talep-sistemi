@@ -80,6 +80,24 @@ namespace BelediyeTalepSistemi.Controllers
                         Ad = g.Key,
                         Sayi = g.Count()
                     })
+                    .ToList(),
+
+                HaritaTalepleri = talepler
+                    .Where(t => t.Enlem.HasValue && t.Boylam.HasValue)
+                    .Select(t => new DashboardMapItem
+                    {
+                        Id = t.Id,
+                        Baslik = t.Baslik,
+                        Aciklama = t.Aciklama,
+                        Kategori = t.Kategori,
+                        Mudurluk = t.Mudurluk != null ? t.Mudurluk.MudurlukAdi : "Belirtilmemiş",
+                        Durum = t.TalepDurumu != null ? t.TalepDurumu.DurumAdi : "Belirtilmemiş",
+                        AcikAdres = t.AcikAdres ?? "Adres bilgisi yok",
+                        Enlem = t.Enlem ?? 0,
+                        Boylam = t.Boylam ?? 0,
+                        FotografYolu = t.FotografYolu,
+                        OlusturulmaTarihi = t.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")
+                    })
                     .ToList()
             };
 

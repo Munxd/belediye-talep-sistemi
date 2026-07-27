@@ -1,4 +1,5 @@
 ﻿@model BelediyeTalepSistemi.ViewModels.DashboardViewModel
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "Dashboard";
@@ -6,56 +7,76 @@
     var maxMudurluk = Model.MudurlukDagilimi.Any() ? Model.MudurlukDagilimi.Max(x => x.Sayi) : 1;
     var maxKategori = Model.KategoriDagilimi.Any() ? Model.KategoriDagilimi.Max(x => x.Sayi) : 1;
     var maxDurum = Model.DurumDagilimi.Any() ? Model.DurumDagilimi.Max(x => x.Sayi) : 1;
+
+    var haritaTalepleriJson = JsonSerializer.Serialize(Model.HaritaTalepleri);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        #dashboardMap {
+            height: 450px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .map-detail-card {
+            min-height: 450px;
+        }
+    </style>
 }
 
 <div class="container mt-5">
     <h2>Dashboard</h2>
     <p class="text-muted">Sistemdeki talep durumları ve dağılımları aşağıda gösterilmektedir.</p>
 
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center shadow">
+    <div class="row mt-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow text-center">
                 <div class="card-body">
-                    <h5>Toplam Talep</h5>
+                    <h4>Toplam Talep</h4>
                     <h3>@Model.ToplamTalep</h3>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card text-center shadow">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow text-center">
                 <div class="card-body">
-                    <h5>Yeni</h5>
+                    <h4>Yeni</h4>
                     <h3>@Model.YeniTalep</h3>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card text-center shadow">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow text-center">
                 <div class="card-body">
-                    <h5>İnceleniyor</h5>
+                    <h4>İnceleniyor</h4>
                     <h3>@Model.InceleniyorTalep</h3>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card text-center shadow">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow text-center">
                 <div class="card-body">
-                    <h5>Tamamlandı</h5>
+                    <h4>Tamamlandı</h4>
                     <h3>@Model.TamamlananTalep</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mt-4">
         <div class="col-md-6 mb-4">
             <div class="card shadow">
                 <div class="card-header">
                     <h5>Müdürlüklere Göre Talep Dağılımı</h5>
                 </div>
+
                 <div class="card-body">
                     @foreach (var item in Model.MudurlukDagilimi)
                     {
@@ -66,8 +87,9 @@
                                 <span>@item.Ad</span>
                                 <strong>@item.Sayi</strong>
                             </div>
+
                             <div class="progress">
-                                <div class="progress-bar" style="width:@oran%"></div>
+                                <div class="progress-bar bg-primary" style="width: @oran%"></div>
                             </div>
                         </div>
                     }
@@ -80,6 +102,7 @@
                 <div class="card-header">
                     <h5>Kategorilere Göre Talep Dağılımı</h5>
                 </div>
+
                 <div class="card-body">
                     @foreach (var item in Model.KategoriDagilimi)
                     {
@@ -90,8 +113,9 @@
                                 <span>@item.Ad</span>
                                 <strong>@item.Sayi</strong>
                             </div>
+
                             <div class="progress">
-                                <div class="progress-bar bg-success" style="width:@oran%"></div>
+                                <div class="progress-bar bg-success" style="width: @oran%"></div>
                             </div>
                         </div>
                     }
@@ -104,6 +128,7 @@
                 <div class="card-header">
                     <h5>Duruma Göre Talep Dağılımı</h5>
                 </div>
+
                 <div class="card-body">
                     @foreach (var item in Model.DurumDagilimi)
                     {
@@ -114,8 +139,9 @@
                                 <span>@item.Ad</span>
                                 <strong>@item.Sayi</strong>
                             </div>
+
                             <div class="progress">
-                                <div class="progress-bar bg-warning" style="width:@oran%"></div>
+                                <div class="progress-bar bg-warning" style="width: @oran%"></div>
                             </div>
                         </div>
                     }
@@ -124,5 +150,88 @@
         </div>
     </div>
 
-    <a asp-controller="Yonetici" asp-action="Index" class="btn btn-secondary">Yönetici Paneline Dön</a>
+    <hr />
+
+    <h4 class="mt-4">Şikayet Haritası</h4>
+    <p class="text-muted">
+        Konum bilgisi olan talepler harita üzerinde kırmızı noktalar ile gösterilmektedir.
+    </p>
+
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div id="dashboardMap"></div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow map-detail-card">
+                <div class="card-header">
+                    <h5>Şikayet Detayları</h5>
+                </div>
+
+                <div class="card-body" id="haritaDetayPanel">
+                    <p class="text-muted">
+                        Haritadaki kırmızı noktalardan birine tıklayarak şikayet detaylarını görüntüleyebilirsiniz.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a asp-controller="Yonetici" asp-action="Index" class="btn btn-secondary">
+        Yönetici Paneline Dön
+    </a>
 </div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        var talepler = @Html.Raw(haritaTalepleriJson);
+
+        var baslangicEnlem = 36.9914;
+        var baslangicBoylam = 35.3308;
+
+        if (talepler.length > 0) {
+        baslangicEnlem = talepler[0].Enlem;
+        baslangicBoylam = talepler[0].Boylam;
+        }
+
+        var map = L.map('dashboardMap').setView([baslangicEnlem, baslangicBoylam], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        talepler.forEach(function (talep) {
+        var marker = L.circleMarker([talep.Enlem, talep.Boylam], {
+        radius: 9,
+        color: 'red',
+        fillColor: 'red',
+        fillOpacity: 0.8
+        }).addTo(map);
+
+        marker.bindPopup("<b>" + talep.Baslik + "</b><br/>" + talep.AcikAdres);
+
+        marker.on('click', function () {
+        var fotografHtml = "";
+
+        if (talep.FotografYolu) {
+        fotografHtml =
+        "<hr />" +
+        "<img src='" + talep.FotografYolu + "' class='img-fluid rounded shadow-sm' alt='Talep fotoğrafı' />";
+        }
+
+        document.getElementById("haritaDetayPanel").innerHTML =
+        "<p><strong>Başlık:</strong><br/>" + talep.Baslik + "</p>" +
+        "<p><strong>Açıklama:</strong><br/>" + talep.Aciklama + "</p>" +
+        "<p><strong>Kategori:</strong><br/>" + talep.Kategori + "</p>" +
+        "<p><strong>Müdürlük:</strong><br/>" + talep.Mudurluk + "</p>" +
+        "<p><strong>Durum:</strong><br/>" + talep.Durum + "</p>" +
+        "<p><strong>Açık Adres:</strong><br/>" + talep.AcikAdres + "</p>" +
+        "<p><strong>Tarih:</strong><br/>" + talep.OlusturulmaTarihi + "</p>" +
+        "<a href='/Yonetici/Details/" + talep.Id + "' class='btn btn-primary btn-sm'>Detaya Git</a>" +
+        fotografHtml;
+        });
+        });
+    </script>
+}

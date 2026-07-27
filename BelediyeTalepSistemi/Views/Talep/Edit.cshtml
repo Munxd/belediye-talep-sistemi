@@ -4,8 +4,21 @@
     ViewData["Title"] = "Talep Düzenle";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        #konumDuzenleMap {
+            height: 350px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+}
+
 <div class="container mt-5">
-    <div class="card shadow mx-auto" style="max-width: 600px;">
+    <div class="card shadow mx-auto" style="max-width: 700px;">
         <div class="card-header text-center">
             <h3>Talep / Şikâyet Düzenle</h3>
         </div>
@@ -45,12 +58,26 @@
 
                 <div class="mb-3">
                     <label asp-for="AcikAdres" class="form-label">Açık Adres</label>
-                    <textarea asp-for="AcikAdres" class="form-control" rows="3" placeholder="Mahalle, cadde, sokak ve bina çevresi gibi bilgileri yazınız."></textarea>
+                    <textarea asp-for="AcikAdres" class="form-control" rows="3"></textarea>
                     <span asp-validation-for="AcikAdres" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Konum Bilgisi</label>
+                    <label class="form-label">Konum Seçimi</label>
+
+                    <div id="konumDuzenleMap"></div>
+
+                    <small class="text-muted d-block mt-2">
+                        Harita üzerinden şikayetin olduğu noktaya tıklayarak konumu güncelleyebilirsiniz.
+                    </small>
+
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="konumAl()">
+                        Bulunduğum Konumu Al
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Seçilen Konum Bilgisi</label>
 
                     <div class="row">
                         <div class="col-md-6 mb-2">
@@ -61,22 +88,12 @@
                             <input asp-for="Boylam" type="text" class="form-control" placeholder="Boylam" readonly />
                         </div>
                     </div>
-
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="konumAl()">
-                        Konumumu Güncelle
-                    </button>
-
-                    <small class="text-muted d-block mt-2">
-                        Konum bilgisi, talebin ilgili ekipler tarafından daha kolay incelenmesi için kullanılacaktır.
-                    </small>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="Fotograf" class="form-label">Yeni Fotoğraf Ekle</label>
                     <input asp-for="Fotograf" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
-                    <small class="text-muted">
-                        Yeni fotoğraf seçmezseniz mevcut fotoğraf korunur.
-                    </small>
+                    <small class="text-muted">Yeni fotoğraf seçmezseniz mevcut fotoğraf korunur.</small>
                 </div>
 
                 <button type="submit" class="btn btn-warning w-100">Güncelle</button>
@@ -92,18 +109,68 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <script>
+        var mevcutEnlem = parseFloat(document.getElementById("Enlem").value);
+        var mevcutBoylam = parseFloat(document.getElementById("Boylam").value);
+
+        var varsayilanEnlem = 36.9914;
+        var varsayilanBoylam = 35.3308;
+
+        if (!isNaN(mevcutEnlem) && !isNaN(mevcutBoylam)) {
+        varsayilanEnlem = mevcutEnlem;
+        varsayilanBoylam = mevcutBoylam;
+        }
+
+        var map = L.map('konumDuzenleMap').setView([varsayilanEnlem, varsayilanBoylam], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var secilenMarker = null;
+
+        function konumSec(enlem, boylam) {
+        document.getElementById("Enlem").value = enlem;
+        document.getElementById("Boylam").value = boylam;
+
+        if (secilenMarker != null) {
+        map.removeLayer(secilenMarker);
+        }
+
+        secilenMarker = L.circleMarker([enlem, boylam], {
+        radius: 9,
+        color: 'red',
+        fillColor: 'red',
+        fillOpacity: 0.8
+        }).addTo(map);
+
+        secilenMarker.bindPopup("Seçilen şikayet konumu").openPopup();
+        }
+
+        if (!isNaN(mevcutEnlem) && !isNaN(mevcutBoylam)) {
+        konumSec(mevcutEnlem, mevcutBoylam);
+        }
+
+        map.on('click', function (e) {
+        konumSec(e.latlng.lat, e.latlng.lng);
+        });
+
         function konumAl() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    document.getElementById("Enlem").value = position.coords.latitude;
-                    document.getElementById("Boylam").value = position.coords.longitude;
-                }, function () {
-                    alert("Konum bilgisi alınamadı. Tarayıcıdan konum izni vermeniz gerekiyor.");
-                });
-            } else {
-                alert("Tarayıcınız konum özelliğini desteklemiyor.");
-            }
+        if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+        var enlem = position.coords.latitude;
+        var boylam = position.coords.longitude;
+
+        map.setView([enlem, boylam], 16);
+        konumSec(enlem, boylam);
+        }, function () {
+        alert("Konum bilgisi alınamadı. Tarayıcıdan konum izni vermeniz gerekiyor.");
+        });
+        } else {
+        alert("Tarayıcınız konum özelliğini desteklemiyor.");
+        }
         }
     </script>
 }

@@ -4,8 +4,21 @@
     ViewData["Title"] = "Talep Oluştur";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        #konumSecimMap {
+            height: 350px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+}
+
 <div class="container mt-5">
-    <div class="card shadow mx-auto" style="max-width: 600px;">
+    <div class="card shadow mx-auto" style="max-width: 700px;">
         <div class="card-header text-center">
             <h3>Talep / Şikâyet Oluştur</h3>
         </div>
@@ -50,7 +63,21 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Konum Bilgisi</label>
+                    <label class="form-label">Konum Seçimi</label>
+
+                    <div id="konumSecimMap"></div>
+
+                    <small class="text-muted d-block mt-2">
+                        Harita üzerinden şikayetin olduğu noktaya tıklayarak konum seçebilirsiniz.
+                    </small>
+
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="konumAl()">
+                        Bulunduğum Konumu Al
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Seçilen Konum Bilgisi</label>
 
                     <div class="row">
                         <div class="col-md-6 mb-2">
@@ -62,12 +89,8 @@
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="konumAl()">
-                        Konumumu Al
-                    </button>
-
-                    <small class="text-muted d-block mt-2">
-                        Konum bilgisi, talebin ilgili ekipler tarafından daha kolay incelenmesi için kullanılacaktır.
+                    <small class="text-muted">
+                        Haritadan nokta seçtiğinizde enlem ve boylam otomatik doldurulur.
                     </small>
                 </div>
 
@@ -90,18 +113,56 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <script>
+        var varsayilanEnlem = 36.9914;
+        var varsayilanBoylam = 35.3308;
+
+        var map = L.map('konumSecimMap').setView([varsayilanEnlem, varsayilanBoylam], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var secilenMarker = null;
+
+        function konumSec(enlem, boylam) {
+        document.getElementById("Enlem").value = enlem;
+        document.getElementById("Boylam").value = boylam;
+
+        if (secilenMarker != null) {
+        map.removeLayer(secilenMarker);
+        }
+
+        secilenMarker = L.circleMarker([enlem, boylam], {
+        radius: 9,
+        color: 'red',
+        fillColor: 'red',
+        fillOpacity: 0.8
+        }).addTo(map);
+
+        secilenMarker.bindPopup("Seçilen şikayet konumu").openPopup();
+        }
+
+        map.on('click', function (e) {
+        konumSec(e.latlng.lat, e.latlng.lng);
+        });
+
         function konumAl() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    document.getElementById("Enlem").value = position.coords.latitude;
-                    document.getElementById("Boylam").value = position.coords.longitude;
-                }, function () {
-                    alert("Konum bilgisi alınamadı. Tarayıcıdan konum izni vermeniz gerekiyor.");
-                });
-            } else {
-                alert("Tarayıcınız konum özelliğini desteklemiyor.");
-            }
+        if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+        var enlem = position.coords.latitude;
+        var boylam = position.coords.longitude;
+
+        map.setView([enlem, boylam], 16);
+        konumSec(enlem, boylam);
+        }, function () {
+        alert("Konum bilgisi alınamadı. Tarayıcıdan konum izni vermeniz gerekiyor.");
+        });
+        } else {
+        alert("Tarayıcınız konum özelliğini desteklemiyor.");
+        }
         }
     </script>
 }
