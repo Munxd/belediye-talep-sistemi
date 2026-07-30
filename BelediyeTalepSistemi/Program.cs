@@ -1,5 +1,6 @@
 using BelediyeTalepSistemi.Data;
 using Microsoft.EntityFrameworkCore;
+using BelediyeTalepSistemi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<TalepAIService>();
 
 builder.Services.AddSession();
 

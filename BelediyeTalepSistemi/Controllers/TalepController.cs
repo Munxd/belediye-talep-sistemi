@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
-
+using BelediyeTalepSistemi.Services;
 namespace BelediyeTalepSistemi.Controllers
 {
     [RoleAuthorize(Roles.Vatandas)]
@@ -14,11 +14,16 @@ namespace BelediyeTalepSistemi.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly TalepAIService _talepAIService;
 
-        public TalepController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public TalepController(
+            ApplicationDbContext context,
+            IWebHostEnvironment webHostEnvironment,
+            TalepAIService talepAIService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _talepAIService = talepAIService;
         }
 
         public async Task<IActionResult> Index()
@@ -119,6 +124,23 @@ namespace BelediyeTalepSistemi.Controllers
             TempData["SuccessMessage"] = "Talebiniz başarıyla oluşturuldu.";
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> TahminEt(string baslik, string aciklama)
+        {
+            var sonuc = _talepAIService.AnalizEt(baslik, aciklama);
+
+            var mudurluk = await _context.Mudurlukler
+                .FirstOrDefaultAsync(m => m.MudurlukAdi == sonuc.MudurlukAdi);
+
+            return Json(new
+            {
+                kategori = sonuc.Kategori,
+                mudurlukId = mudurluk?.Id,
+                mudurlukAdi = sonuc.MudurlukAdi,
+                aciklama = sonuc.Aciklama
+            });
         }
 
         public async Task<IActionResult> Edit(int id)

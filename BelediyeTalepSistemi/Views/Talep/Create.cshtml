@@ -38,6 +38,18 @@
                 </div>
 
                 <div class="mb-3">
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="yapayZekaTahminEt()">
+                        Yapay Zekâ ile Tahmin Et
+                    </button>
+
+                    <small class="text-muted d-block mt-2">
+                        Başlık ve açıklamaya göre kategori ve müdürlük önerisi yapılır.
+                    </small>
+
+                    <div id="aiSonuc" class="alert alert-info mt-3 d-none"></div>
+                </div>
+
+                <div class="mb-3">
                     <label asp-for="Kategori" class="form-label">Kategori</label>
                     <select asp-for="Kategori" class="form-control">
                         <option value="">Kategori seçiniz</option>
@@ -163,6 +175,40 @@
         } else {
         alert("Tarayıcınız konum özelliğini desteklemiyor.");
         }
+        }
+
+
+        function yapayZekaTahminEt() {
+            var baslik = document.getElementById("Baslik").value;
+            var aciklama = document.getElementById("Aciklama").value;
+
+            if (!baslik.trim() || !aciklama.trim()) {
+            alert("Tahmin yapabilmek için başlık ve açıklama alanlarını doldurmanız gerekiyor.");
+            return;
+            }
+
+            fetch("/Talep/TahminEt?baslik=" + encodeURIComponent(baslik) + "&aciklama=" + encodeURIComponent(aciklama))
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("Kategori").value = data.kategori;
+
+                    if (data.mudurlukId != null) {
+                    document.getElementById("MudurlukId").value = data.mudurlukId;
+                    }
+
+                    var aiSonuc = document.getElementById("aiSonuc");
+                    aiSonuc.classList.remove("d-none");
+
+                    aiSonuc.innerHTML =
+                    "<strong>Yapay zekâ tahmini:</strong><br/>" +
+                    "Kategori: " + data.kategori + "<br/>" +
+                    "Müdürlük: " + data.mudurlukAdi + "<br/>" +
+                    "Açıklama: " + data.aciklama;
+        })
+        .catch(error => {
+            alert("Tahmin işlemi sırasında bir hata oluştu.");
+            console.log(error);
+        });
         }
     </script>
 }
