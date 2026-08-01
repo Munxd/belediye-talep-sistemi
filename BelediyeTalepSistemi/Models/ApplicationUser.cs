@@ -8,6 +8,12 @@
 
         public string Email { get; set; } = string.Empty;
 
+        public bool EmailConfirmed { get; set; } = false;
+
+        public string? EmailConfirmationToken { get; set; }
+
+        public DateTime? EmailConfirmationTokenExpiresAt { get; set; }
+
         public string Sifre { get; set; } = string.Empty;
 
         public string Rol { get; set; } = "Vatandas";
