@@ -39,7 +39,9 @@ namespace BelediyeTalepSistemi.Controllers
                 .Include(t => t.Mudurluk)
                 .Include(t => t.TalepDurumu)
                 .Where(t => t.ApplicationUserId == userId.Value)
-                .OrderByDescending(t => t.OlusturulmaTarihi)
+                .OrderBy(t => t.OncelikSeviyesi == "Yüksek" ? 0 :
+                              t.OncelikSeviyesi == "Orta" ? 1 : 2)
+                .ThenByDescending(t => t.OlusturulmaTarihi)
                 .ToListAsync();
 
             return View(talepler);
@@ -110,7 +112,7 @@ namespace BelediyeTalepSistemi.Controllers
                 MudurlukId = model.MudurlukId,
                 TalepDurumuId = yeniDurum.Id,
                 ApplicationUserId = userId.Value,
-                OncelikSeviyesi = "Orta",
+                OncelikSeviyesi = model.OncelikSeviyesi ?? "Orta",
                 OlusturulmaTarihi = DateTime.Now,
                 AcikAdres = model.AcikAdres,
                 Enlem = KonumDegeriCevir(model.Enlem),
@@ -139,6 +141,8 @@ namespace BelediyeTalepSistemi.Controllers
                 kategori = sonuc.Kategori,
                 mudurlukId = mudurluk?.Id,
                 mudurlukAdi = sonuc.MudurlukAdi,
+                oncelikSeviyesi = sonuc.OncelikSeviyesi,
+                guvenOrani = sonuc.GuvenOrani,
                 aciklama = sonuc.Aciklama
             });
         }

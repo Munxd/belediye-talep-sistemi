@@ -35,7 +35,9 @@ namespace BelediyeTalepSistemi.Controllers
                 .Include(t => t.ApplicationUser)
                 .Include(t => t.Mudurluk)
                 .Include(t => t.TalepDurumu)
-                .OrderByDescending(t => t.OlusturulmaTarihi)
+                .OrderBy(t => t.OncelikSeviyesi == "Yüksek" ? 0 :
+                              t.OncelikSeviyesi == "Orta" ? 1 : 2)
+                .ThenByDescending(t => t.OlusturulmaTarihi)
                 .ToListAsync();
 
             return View(talepler);

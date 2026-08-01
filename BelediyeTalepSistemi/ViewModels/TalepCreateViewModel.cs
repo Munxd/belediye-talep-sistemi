@@ -17,6 +17,7 @@ namespace BelediyeTalepSistemi.ViewModels
         [Required(ErrorMessage = "Müdürlük seçimi zorunludur.")]
         [Display(Name = "Müdürlük")]
         public int MudurlukId { get; set; }
+        public string? OncelikSeviyesi { get; set; } = "Orta";
 
         [Required(ErrorMessage = "Açık adres alanı zorunludur.")]
         public string AcikAdres { get; set; } = string.Empty;

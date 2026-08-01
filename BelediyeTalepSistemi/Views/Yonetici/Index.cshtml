@@ -1,5 +1,18 @@
 ﻿@model List<BelediyeTalepSistemi.Models.Talep>
 
+@functions {
+    string OncelikBadgeClass(string? oncelik)
+    {
+        return oncelik switch
+        {
+            "Yüksek" => "bg-danger",
+            "Orta" => "bg-warning text-dark",
+            "Düşük" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+}
+
 @{
     ViewData["Title"] = "Yönetici Paneli";
 }
@@ -72,6 +85,7 @@
                     <th>Kategori</th>
                     <th>Müdürlük</th>
                     <th>Durum</th>
+                    <th>Öncelik</th>
                     <th>Tarih</th>
                     <th>İşlem</th>
                 </tr>
@@ -85,6 +99,11 @@
                         <td>@talep.Kategori</td>
                         <td>@talep.Mudurluk?.MudurlukAdi</td>
                         <td>@talep.TalepDurumu?.DurumAdi</td>
+                        <td>
+                            <span class="badge @OncelikBadgeClass(talep.OncelikSeviyesi)">
+                                @(talep.OncelikSeviyesi ?? "Orta")
+                            </span>
+                        </td>
                         <td>@talep.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
                         <td>
                             <a asp-controller="Yonetici" asp-action="Details" asp-route-id="@talep.Id" class="btn btn-sm btn-info">

@@ -39,7 +39,7 @@
 
                 <div class="mb-3">
                     <button type="button" class="btn btn-outline-success btn-sm" onclick="yapayZekaTahminEt()">
-                        Yapay Zekâ ile Tahmin Et
+                        Sistem Önerisini Al
                     </button>
 
                     <small class="text-muted d-block mt-2">
@@ -67,6 +67,8 @@
                     </select>
                     <span asp-validation-for="MudurlukId" class="text-danger"></span>
                 </div>
+
+                <input asp-for="OncelikSeviyesi" type="hidden" />
 
                 <div class="mb-3">
                     <label asp-for="AcikAdres" class="form-label">Açık Adres</label>
@@ -196,14 +198,14 @@
                     document.getElementById("MudurlukId").value = data.mudurlukId;
                     }
 
+                    document.getElementById("OncelikSeviyesi").value = data.oncelikSeviyesi;
+
                     var aiSonuc = document.getElementById("aiSonuc");
                     aiSonuc.classList.remove("d-none");
 
                     aiSonuc.innerHTML =
-                    "<strong>Yapay zekâ tahmini:</strong><br/>" +
-                    "Kategori: " + data.kategori + "<br/>" +
-                    "Müdürlük: " + data.mudurlukAdi + "<br/>" +
-                    "Açıklama: " + data.aciklama;
+                        "<strong>Sistem önerisi oluşturuldu.</strong><br/>" +
+                        "Kategori ve müdürlük alanları, yazdığınız açıklamaya göre otomatik dolduruldu.";
         })
         .catch(error => {
             alert("Tahmin işlemi sırasında bir hata oluştu.");
