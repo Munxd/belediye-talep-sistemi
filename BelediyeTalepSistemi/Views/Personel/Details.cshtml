@@ -1,6 +1,6 @@
 ﻿@model BelediyeTalepSistemi.Models.Talep
 @using System.Globalization
-@using System.Text.Json
+
 
 @{
     ViewData["Title"] = "Talep Detayı";
@@ -112,17 +112,27 @@
                 <hr />
 
                 <h5>Talep Konumu</h5>
-                <div id="personelMap"></div>
+                <div id="personelMap"
+                     data-baslik="@Model.Baslik"
+                     data-adres="@Model.AcikAdres">
+                </div>
             }
 
             <hr />
 
             <h5>Durum Güncelle</h5>
 
-            <form asp-controller="Personel" asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+            <form asp-controller="Personel"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@Model.Id"
+                  method="post"
+                  id="durumGuncelleForm">
+
+                <input type="hidden" id="problemCozulduMu" name="problemCozulduMu" value="false" />
+
                 <div class="mb-3">
                     <label class="form-label">Yeni Durum</label>
-                    <select name="talepDurumuId" class="form-control" asp-items="ViewBag.Durumlar">
+                    <select name="talepDurumuId" id="durumSelect" class="form-control" asp-items="ViewBag.Durumlar">
                         <option value="">Durum seçiniz</option>
                     </select>
                 </div>
@@ -143,8 +153,10 @@
             var enlem = parseFloat("@enlem");
             var boylam = parseFloat("@boylam");
 
-            var baslik = @Html.Raw(JsonSerializer.Serialize(Model.Baslik));
-            var adres = @Html.Raw(JsonSerializer.Serialize(Model.AcikAdres));
+            var personelMapElement = document.getElementById("personelMap");
+
+            var baslik = personelMapElement.dataset.baslik;
+            var adres = personelMapElement.dataset.adres;
 
             var map = L.map('personelMap').setView([enlem, boylam], 15);
 
@@ -162,4 +174,22 @@
             .openPopup();
         </script>
     }
+
+    <script>
+        document.getElementById("durumGuncelleForm").addEventListener("submit", function (e) {
+        const durumSelect = document.getElementById("durumSelect");
+        const secilenDurum = durumSelect.options[durumSelect.selectedIndex].text.trim();
+        const problemCozulduInput = document.getElementById("problemCozulduMu");
+
+        if (secilenDurum === "Tamamlandı") {
+        const onay = confirm("Problem çözüldü mü? Evet derseniz talep aktif personel listesinden kaldırılacak.");
+
+        if (onay) {
+        problemCozulduInput.value = "true";
+        } else {
+        e.preventDefault();
+        }
+        }
+        });
+    </script>
 }

@@ -1,5 +1,6 @@
 ﻿using BelediyeTalepSistemi.Data;
 using BelediyeTalepSistemi.Helpers;
+using BelediyeTalepSistemi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +19,31 @@ namespace BelediyeTalepSistemi.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var personel = await _context.ApplicationUsers
+                .Include(u => u.Mudurluk)
+                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+
+            if (personel == null || personel.MudurlukId == null)
+            {
+                ViewBag.Uyari = "Bu personel henüz bir müdürlüğe atanmamış.";
+
+                return View(new List<Talep>());
+            }
+
+            ViewBag.PersonelMudurluk = personel.Mudurluk?.MudurlukAdi;
+
             var talepler = await _context.Talepler
                 .Include(t => t.ApplicationUser)
                 .Include(t => t.Mudurluk)
                 .Include(t => t.TalepDurumu)
+                .Where(t => t.MudurlukId == personel.MudurlukId && t.AktifMi == true)
                 .OrderBy(t => t.OncelikSeviyesi == "Yüksek" ? 0 :
                               t.OncelikSeviyesi == "Orta" ? 1 : 2)
                 .ThenByDescending(t => t.OlusturulmaTarihi)
@@ -54,31 +76,34 @@ namespace BelediyeTalepSistemi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateStatus(int id, int talepDurumuId)
+        public async Task<IActionResult> UpdateStatus(int id, int talepDurumuId, bool problemCozulduMu)
         {
-            var talep = await _context.Talepler.FindAsync(id);
+            var talep = await _context.Talepler
+                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (talep == null)
             {
                 return NotFound();
             }
 
-            var durumVarMi = await _context.TalepDurumlari
-                .AnyAsync(d => d.Id == talepDurumuId);
+            var secilenDurum = await _context.TalepDurumlari
+                .FirstOrDefaultAsync(d => d.Id == talepDurumuId);
 
-            if (!durumVarMi)
+            if (secilenDurum == null)
             {
-                TempData["ErrorMessage"] = "Seçilen durum bulunamadı.";
-                return RedirectToAction("Details", new { id });
+                return NotFound();
             }
 
             talep.TalepDurumuId = talepDurumuId;
 
+            if (secilenDurum.DurumAdi == "Tamamlandı" && problemCozulduMu)
+            {
+                talep.AktifMi = false;
+            }
+
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Talep durumu başarıyla güncellendi.";
-
-            return RedirectToAction("Details", new { id });
+            return RedirectToAction(nameof(Index));
         }
     }
 }

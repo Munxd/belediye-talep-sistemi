@@ -14,6 +14,8 @@
 
         public DateTime OlusturulmaTarihi { get; set; } = DateTime.Now;
 
+        public bool AktifMi { get; set; } = true;
+
         public int ApplicationUserId { get; set; }
         public ApplicationUser? ApplicationUser { get; set; }
 

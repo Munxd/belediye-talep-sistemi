@@ -85,7 +85,7 @@ namespace BelediyeTalepSistemi.Controllers
                     .ToList(),
 
                 HaritaTalepleri = talepler
-                    .Where(t => t.Enlem.HasValue && t.Boylam.HasValue)
+                    .Where(t => t.AktifMi == true && t.Enlem.HasValue && t.Boylam.HasValue)
                     .Select(t => new DashboardMapItem
                     {
                         Id = t.Id,
