@@ -11,112 +11,166 @@
             _ => "bg-secondary"
         };
     }
+
+    string DurumBadgeClass(string? durum)
+    {
+        return durum switch
+        {
+            "Yeni" => "bg-primary",
+            "İnceleniyor" => "bg-warning text-dark",
+            "Tamamlandı" => "bg-success",
+            "İptal Edildi" => "bg-secondary",
+            _ => "bg-info text-dark"
+        };
+    }
 }
 
 @{
     ViewData["Title"] = "Yönetici Paneli";
 }
 
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2>Yönetici Paneli</h2>
-            <p class="text-muted">Sistemdeki genel talep ve kullanıcı bilgileri aşağıda gösterilmektedir.</p>
+<section class="panel-page-section">
+    <div class="container">
+
+        <div class="panel-page-header">
+            <div>
+                <span class="panel-page-label">Yönetici Paneli</span>
+                <h2>Genel Sistem Yönetimi</h2>
+                <p>Sistemdeki talepleri, kullanıcı sayılarını ve müdürlük işlemlerini buradan takip edebilirsiniz.</p>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a asp-controller="Yonetici" asp-action="Dashboard" class="btn btn-orange">
+                    Dashboard
+                </a>
+
+                <a asp-controller="Mudurluk" asp-action="Index" class="btn btn-outline-light">
+                    Müdürlükler
+                </a>
+            </div>
         </div>
 
-        <a asp-controller="Yonetici" asp-action="Dashboard" class="btn btn-primary">
-            Dashboard
-        </a>
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Toplam Talep</span>
+                    <strong>@ViewBag.ToplamTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Yeni Talep</span>
+                    <strong>@ViewBag.YeniTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Vatandaş</span>
+                    <strong>@ViewBag.ToplamVatandas</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Personel</span>
+                    <strong>@ViewBag.ToplamPersonel</strong>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="empty-state-card">
+                <h4>Sistemde henüz talep bulunmuyor.</h4>
+                <p>Vatandaşlar talep oluşturduğunda bu alanda listelenecektir.</p>
+
+                <a asp-controller="Yonetici" asp-action="Dashboard" class="btn btn-orange">
+                    Dashboard'a Git
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-card">
+                <div class="table-card-header">
+                    <h5>Son Talepler</h5>
+                    <span>@Model.Count kayıt görüntüleniyor</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle modern-table">
+                        <thead>
+                            <tr>
+                                <th>Vatandaş</th>
+                                <th>Başlık</th>
+                                <th>Kategori</th>
+                                <th>Müdürlük</th>
+                                <th>Durum</th>
+                                <th>Öncelik</th>
+                                <th>Tarih</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var talep in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @(talep.ApplicationUser?.AdSoyad ?? "Bilinmiyor")
+                                    </td>
+
+                                    <td>
+                                        <strong>@talep.Baslik</strong>
+                                    </td>
+
+                                    <td>@talep.Kategori</td>
+
+                                    <td>
+                                        @(talep.Mudurluk?.MudurlukAdi ?? "Belirtilmedi")
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @DurumBadgeClass(talep.TalepDurumu?.DurumAdi)">
+                                            @(talep.TalepDurumu?.DurumAdi ?? "Bilinmiyor")
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @OncelikBadgeClass(talep.OncelikSeviyesi)">
+                                            @(talep.OncelikSeviyesi ?? "Orta")
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @talep.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")
+                                    </td>
+
+                                    <td>
+                                        <div class="table-action-buttons">
+                                            <a asp-controller="Yonetici"
+                                               asp-action="Details"
+                                               asp-route-id="@talep.Id"
+                                               class="btn btn-sm btn-info">
+                                                Detay
+                                            </a>
+
+                                            <a asp-controller="Yonetici"
+                                               asp-action="AssignMudurluk"
+                                               asp-route-id="@talep.Id"
+                                               class="btn btn-sm btn-warning">
+                                                Müdürlük Ata
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
     </div>
-
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center shadow">
-                <div class="card-body">
-                    <h5>Toplam Talep</h5>
-                    <h3>@ViewBag.ToplamTalep</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-center shadow">
-                <div class="card-body">
-                    <h5>Yeni Talep</h5>
-                    <h3>@ViewBag.YeniTalep</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-center shadow">
-                <div class="card-body">
-                    <h5>Vatandaş</h5>
-                    <h3>@ViewBag.ToplamVatandas</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-center shadow">
-                <div class="card-body">
-                    <h5>Personel</h5>
-                    <h3>@ViewBag.ToplamPersonel</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <h4>Son Talepler</h4>
-
-    @if (Model.Count == 0)
-    {
-        <div class="alert alert-info">
-            Sistemde henüz oluşturulmuş talep bulunmamaktadır.
-        </div>
-    }
-    else
-    {
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Vatandaş</th>
-                    <th>Başlık</th>
-                    <th>Kategori</th>
-                    <th>Müdürlük</th>
-                    <th>Durum</th>
-                    <th>Öncelik</th>
-                    <th>Tarih</th>
-                    <th>İşlem</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var talep in Model)
-                {
-                    <tr>
-                        <td>@talep.ApplicationUser?.AdSoyad</td>
-                        <td>@talep.Baslik</td>
-                        <td>@talep.Kategori</td>
-                        <td>@talep.Mudurluk?.MudurlukAdi</td>
-                        <td>@talep.TalepDurumu?.DurumAdi</td>
-                        <td>
-                            <span class="badge @OncelikBadgeClass(talep.OncelikSeviyesi)">
-                                @(talep.OncelikSeviyesi ?? "Orta")
-                            </span>
-                        </td>
-                        <td>@talep.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>
-                            <a asp-controller="Yonetici" asp-action="Details" asp-route-id="@talep.Id" class="btn btn-sm btn-info">
-                                Detay
-                            </a>
-
-                            <a asp-controller="Yonetici" asp-action="AssignMudurluk" asp-route-id="@talep.Id" class="btn btn-sm btn-warning">
-                                Müdürlük Ata
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-</div>
+</section>

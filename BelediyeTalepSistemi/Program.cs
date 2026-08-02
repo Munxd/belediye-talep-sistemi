@@ -2,7 +2,7 @@ using BelediyeTalepSistemi.Data;
 using Microsoft.EntityFrameworkCore;
 using BelediyeTalepSistemi.Services;
 using BelediyeTalepSistemi.Models;
-using BelediyeTalepSistemi.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -11,60 +11,176 @@
             _ => "bg-secondary"
         };
     }
+
+    string DurumBadgeClass(string? durum)
+    {
+        return durum switch
+        {
+            "Yeni" => "bg-primary",
+            "İnceleniyor" => "bg-warning text-dark",
+            "Tamamlandı" => "bg-success",
+            "İptal Edildi" => "bg-secondary",
+            _ => "bg-info text-dark"
+        };
+    }
 }
 
 @{
     ViewData["Title"] = "Personel Paneli";
+
+    var toplamTalep = Model.Count;
+    var yeniTalep = Model.Count(t => t.TalepDurumu?.DurumAdi == "Yeni");
+    var inceleniyorTalep = Model.Count(t => t.TalepDurumu?.DurumAdi == "İnceleniyor");
+    var yuksekOncelik = Model.Count(t => t.OncelikSeviyesi == "Yüksek");
+
+    var personelMudurluk = ViewBag.PersonelMudurluk as string;
 }
 
-<div class="container mt-5">
-    <h2>Personel Paneli</h2>
-    <p class="text-muted">Sisteme gelen vatandaş talepleri aşağıda listelenmektedir.</p>
+<section class="panel-page-section">
+    <div class="container">
 
-    @if (Model.Count == 0)
-    {
-        <div class="alert alert-info">
-            Sistemde henüz oluşturulmuş talep bulunmamaktadır.
+        <div class="panel-page-header">
+            <div>
+                <span class="panel-page-label">Personel Paneli</span>
+
+                <h2>
+                    @(string.IsNullOrEmpty(personelMudurluk) ? "Birim Talepleri" : personelMudurluk + " Talepleri")
+                </h2>
+
+                <p>
+                    Bağlı olduğunuz müdürlüğe gelen aktif vatandaş taleplerini buradan inceleyebilirsiniz.
+                </p>
+            </div>
+
+            <a asp-controller="Home" asp-action="Index" class="btn btn-orange">
+                Ana Sayfaya Dön
+            </a>
         </div>
-    }
-    else
-    {
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Vatandaş</th>
-                    <th>Başlık</th>
-                    <th>Kategori</th>
-                    <th>Müdürlük</th>
-                    <th>Durum</th>
-                    <th>Öncelik</th>
-                    <th>Tarih</th>
-                    <th>İşlem</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var talep in Model)
-                {
-                    <tr>
-                        <td>@talep.ApplicationUser?.AdSoyad</td>
-                        <td>@talep.Baslik</td>
-                        <td>@talep.Kategori</td>
-                        <td>@talep.Mudurluk?.MudurlukAdi</td>
-                        <td>@talep.TalepDurumu?.DurumAdi</td>
-                        <td>
-                            <span class="badge @OncelikBadgeClass(talep.OncelikSeviyesi)">
-                                @(talep.OncelikSeviyesi ?? "Orta")
-                            </span>
-                        </td>
-                        <td>@talep.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>
-                            <a asp-controller="Personel" asp-action="Details" asp-route-id="@talep.Id" class="btn btn-sm btn-info">
-                                Detay
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-</div>
+
+        @if (ViewBag.Uyari != null)
+        {
+            <div class="alert alert-warning shadow-sm">
+                @ViewBag.Uyari
+            </div>
+        }
+
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Aktif Talep</span>
+                    <strong>@toplamTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Yeni</span>
+                    <strong>@yeniTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>İnceleniyor</span>
+                    <strong>@inceleniyorTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Yüksek Öncelik</span>
+                    <strong>@yuksekOncelik</strong>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="empty-state-card">
+                <h4>Aktif talep bulunmuyor.</h4>
+
+                <p>
+                    Şu anda bağlı olduğunuz müdürlüğe ait aktif bir vatandaş talebi bulunmamaktadır.
+                </p>
+
+                <a asp-controller="Home" asp-action="Index" class="btn btn-orange">
+                    Ana Sayfaya Dön
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-card">
+                <div class="table-card-header">
+                    <h5>Aktif Talep Listesi</h5>
+                    <span>@Model.Count kayıt görüntüleniyor</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle modern-table">
+                        <thead>
+                            <tr>
+                                <th>Vatandaş</th>
+                                <th>Başlık</th>
+                                <th>Kategori</th>
+                                <th>Müdürlük</th>
+                                <th>Durum</th>
+                                <th>Öncelik</th>
+                                <th>Tarih</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var talep in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @(talep.ApplicationUser?.AdSoyad ?? "Bilinmiyor")
+                                    </td>
+
+                                    <td>
+                                        <strong>@talep.Baslik</strong>
+                                    </td>
+
+                                    <td>@talep.Kategori</td>
+
+                                    <td>
+                                        @(talep.Mudurluk?.MudurlukAdi ?? "Belirtilmedi")
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @DurumBadgeClass(talep.TalepDurumu?.DurumAdi)">
+                                            @(talep.TalepDurumu?.DurumAdi ?? "Bilinmiyor")
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @OncelikBadgeClass(talep.OncelikSeviyesi)">
+                                            @(talep.OncelikSeviyesi ?? "Orta")
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @talep.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")
+                                    </td>
+
+                                    <td>
+                                        <div class="table-action-buttons">
+                                            <a asp-controller="Personel"
+                                               asp-action="Details"
+                                               asp-route-id="@talep.Id"
+                                               class="btn btn-sm btn-info">
+                                                Detay
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</section>

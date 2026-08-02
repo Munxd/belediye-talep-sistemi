@@ -5,62 +5,145 @@
     var rol = Context.Session.GetString("Rol");
 }
 
-@if (adSoyad == null)
-{
-    <div class="text-center mt-5">
-        <h1 class="display-4">Belediye Talep ve Şikâyet Sistemi</h1>
-        <p class="lead">Sisteme giriş yaparak talep ve şikâyetlerinizi oluşturabilirsiniz.</p>
+<section class="home-hero">
+    <div class="container">
+        <div class="home-hero-content text-center">
+            <img src="~/images/adana-logo.png"
+                 alt="Belediye Logosu"
+                 class="home-hero-logo" />
 
-        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Giriş Yap</a>
-        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">Kayıt Ol</a>
+            <h1>Belediye Talep ve Şikayet Sistemi</h1>
+
+            @if (adSoyad == null)
+            {
+                <p>
+                    Merhaba, belediye hizmetleriyle ilgili talep ve şikayetlerinizi sisteme giriş yaparak kolayca oluşturabilirsiniz.
+                </p>
+
+                <div class="hero-search-box">
+                    <span>Size nasıl yardımcı olabiliriz?</span>
+                    <a asp-controller="Account" asp-action="Login" class="hero-search-button">
+                        Giriş
+                    </a>
+                </div>
+
+                <div class="hero-action-buttons">
+                    <a asp-controller="Account" asp-action="Login" class="hero-pill">
+                        Giriş Yap
+                    </a>
+
+                    <a asp-controller="Account" asp-action="Register" class="hero-pill">
+                        Kayıt Ol
+                    </a>
+
+                    <a href="#sistemBilgileri" class="hero-pill">
+                        Sistem Hakkında
+                    </a>
+                </div>
+            }
+            else if (rol == "Vatandas")
+            {
+                <p>
+                    Merhaba @adSoyad, talep ve şikâyet işlemlerinizi aşağıdaki alanlardan yönetebilirsiniz.
+                </p>
+
+                <div class="hero-search-box">
+                    <span>Yeni bir talep oluşturabilir veya mevcut taleplerinizi takip edebilirsiniz.</span>
+                    <a asp-controller="Talep" asp-action="Create" class="hero-search-button">
+                        Talep Oluştur
+                    </a>
+                </div>
+
+                <div class="hero-action-buttons">
+                    <a asp-controller="Talep" asp-action="Create" class="hero-pill">
+                        Talep Oluştur
+                    </a>
+
+                    <a asp-controller="Talep" asp-action="Index" class="hero-pill">
+                        Taleplerim
+                    </a>
+                </div>
+            }
+            else if (rol == "Personel")
+            {
+                <p>
+                    Merhaba @adSoyad, bağlı olduğunuz müdürlüğe gelen aktif talepleri personel panelinden inceleyebilirsiniz.
+                </p>
+
+                <div class="hero-search-box">
+                    <span>Size atanmış birim taleplerini görüntülemek için personel paneline geçebilirsiniz.</span>
+                    <a asp-controller="Personel" asp-action="Index" class="hero-search-button">
+                        Panele Git
+                    </a>
+                </div>
+
+                <div class="hero-action-buttons">
+                    <a asp-controller="Personel" asp-action="Index" class="hero-pill">
+                        Personel Paneli
+                    </a>
+                </div>
+            }
+            else if (rol == "Yonetici")
+            {
+                <p>
+                    Merhaba @adSoyad, sistemdeki talepleri, müdürlükleri ve raporları yönetebilirsiniz.
+                </p>
+
+                <div class="hero-search-box">
+                    <span>Talep durumlarını, dashboard ekranını ve müdürlük yönetimini buradan takip edebilirsiniz.</span>
+                    <a asp-controller="Yonetici" asp-action="Dashboard" class="hero-search-button">
+                        Dashboard
+                    </a>
+                </div>
+
+                <div class="hero-action-buttons">
+                    <a asp-controller="Yonetici" asp-action="Index" class="hero-pill">
+                        Yönetici Paneli
+                    </a>
+
+                    <a asp-controller="Yonetici" asp-action="Dashboard" class="hero-pill">
+                        Dashboard
+                    </a>
+
+                    <a asp-controller="Mudurluk" asp-action="Index" class="hero-pill">
+                        Müdürlükler
+                    </a>
+                </div>
+            }
+        </div>
     </div>
-}
-else if (rol == "Vatandas")
-{
-    <div class="container mt-5">
-        <h2>Hoş geldiniz, @adSoyad</h2>
-        <p class="text-muted">Talep ve şikâyet işlemlerinizi aşağıdaki alanlardan yönetebilirsiniz.</p>
+</section>
 
-        <div class="row mt-4 justify-content-center">
-            <div class="col-md-4 mb-3">
-                <div class="card shadow h-100">
-                    <div class="card-body text-center">
-                        <h4>Talep Oluştur</h4>
-                        <p>Yeni bir talep veya şikâyet kaydı oluşturabilirsiniz.</p>
-                        <a asp-controller="Talep" asp-action="Create" class="btn btn-primary">Talep Oluştur</a>
-                    </div>
-                </div>
+<section class="container home-info-section" id="sistemBilgileri">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="home-info-card">
+                <div class="info-card-icon">📝</div>
+                <h4>Talep Oluşturma</h4>
+                <p>
+                    Vatandaşlar talep veya şikâyetlerini açıklama, adres, konum ve fotoğraf bilgisiyle sisteme kaydedebilir.
+                </p>
             </div>
+        </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card shadow h-100">
-                    <div class="card-body text-center">
-                        <h4>Taleplerim</h4>
-                        <p>Oluşturduğunuz talepleri görüntüleyebilir ve durumlarını takip edebilirsiniz.</p>
-                        <a asp-controller="Talep" asp-action="Index" class="btn btn-success">Taleplerimi Gör</a>
-                    </div>
-                </div>
+        <div class="col-md-4 mb-4">
+            <div class="home-info-card">
+                <div class="info-card-icon">📍</div>
+                <h4>Konum Takibi</h4>
+                <p>
+                    Konum bilgisi olan talepler harita üzerinde görüntülenir ve ilgili müdürlükler tarafından takip edilir.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="home-info-card">
+                <div class="info-card-icon">📊</div>
+                <h4>Yönetim Paneli</h4>
+                <p>
+                    Yönetici ekranında talepler, müdürlük dağılımları, durum bilgileri ve harita üzerinden raporlar incelenebilir.
+                </p>
             </div>
         </div>
     </div>
-}
-else if (rol == "Personel")
-{
-    <div class="container mt-5">
-        <h2>Personel Ana Sayfası</h2>
-        <p class="text-muted">Size gelen vatandaş taleplerini personel panelinden inceleyebilirsiniz.</p>
-
-        <a asp-controller="Personel" asp-action="Index" class="btn btn-primary">Personel Paneline Git</a>
-    </div>
-}
-else if (rol == "Yonetici")
-{
-    <div class="container mt-5">
-        <h2>Yönetici Ana Sayfası</h2>
-        <p class="text-muted">Sistemdeki talepleri, müdürlükleri ve raporları yönetebilirsiniz.</p>
-
-        <a asp-controller="Yonetici" asp-action="Index" class="btn btn-primary">Yönetici Paneli</a>
-        <a asp-controller="Yonetici" asp-action="Dashboard" class="btn btn-success">Dashboard</a>
-        <a asp-controller="Mudurluk" asp-action="Index" class="btn btn-warning">Müdürlük Yönetimi</a>
-    </div>
-}
+</section>

@@ -18,189 +18,241 @@
         #dashboardMap {
             height: 450px;
             width: 100%;
-            border-radius: 8px;
+            border-radius: 14px;
             border: 1px solid #ddd;
         }
 
         .map-detail-card {
             min-height: 450px;
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
         }
 
         .map-legend .badge {
             font-size: 14px;
             padding: 8px 10px;
         }
+
+        .dashboard-chart-card {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .dashboard-chart-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #eee;
+            background-color: #f8faf9;
+        }
+
+            .dashboard-chart-header h5 {
+                margin: 0;
+                font-weight: 800;
+                color: #263238;
+            }
+
+        .dashboard-chart-body {
+            padding: 22px;
+        }
+
+        .dashboard-map-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 20px;
+            background-color: #eef1ef;
+        }
+
+        .progress-bar {
+            border-radius: 20px;
+        }
     </style>
 }
 
-<div class="container mt-5">
-    <h2>Dashboard</h2>
-    <p class="text-muted">Sistemdeki talep durumları ve dağılımları aşağıda gösterilmektedir.</p>
+<section class="panel-page-section">
+    <div class="container">
 
-    <div class="row mt-4">
-        <div class="col-md-3 mb-3">
-            <div class="card shadow text-center">
-                <div class="card-body">
-                    <h4>Toplam Talep</h4>
-                    <h3>@Model.ToplamTalep</h3>
+        <div class="panel-page-header">
+            <div>
+                <span class="panel-page-label">Yönetici Dashboard</span>
+                <h2>Talep Raporları ve Şikâyet Haritası</h2>
+                <p>Sistemdeki talep durumları, dağılımlar ve konumlu şikâyetler bu ekranda görüntülenir.</p>
+            </div>
+
+            <a asp-controller="Yonetici" asp-action="Index" class="btn btn-orange">
+                Yönetici Paneline Dön
+            </a>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Toplam Talep</span>
+                    <strong>@Model.ToplamTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Yeni</span>
+                    <strong>@Model.YeniTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>İnceleniyor</span>
+                    <strong>@Model.InceleniyorTalep</strong>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="summary-card">
+                    <span>Tamamlandı</span>
+                    <strong>@Model.TamamlananTalep</strong>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card shadow text-center">
-                <div class="card-body">
-                    <h4>Yeni</h4>
-                    <h3>@Model.YeniTalep</h3>
+        <div class="row mt-4">
+            <div class="col-md-6 mb-4">
+                <div class="dashboard-chart-card">
+                    <div class="dashboard-chart-header">
+                        <h5>Müdürlüklere Göre Talep Dağılımı</h5>
+                    </div>
+
+                    <div class="dashboard-chart-body">
+                        @foreach (var item in Model.MudurlukDagilimi)
+                        {
+                            var oran = (item.Sayi * 100) / maxMudurluk;
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>@item.Ad</span>
+                                    <strong>@item.Sayi</strong>
+                                </div>
+
+                                <div class="progress">
+                                    <div class="progress-bar bg-primary" style="width: @(oran)%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="dashboard-chart-card">
+                    <div class="dashboard-chart-header">
+                        <h5>Kategorilere Göre Talep Dağılımı</h5>
+                    </div>
+
+                    <div class="dashboard-chart-body">
+                        @foreach (var item in Model.KategoriDagilimi)
+                        {
+                            var oran = (item.Sayi * 100) / maxKategori;
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>@item.Ad</span>
+                                    <strong>@item.Sayi</strong>
+                                </div>
+
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: @oran%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="dashboard-chart-card">
+                    <div class="dashboard-chart-header">
+                        <h5>Duruma Göre Talep Dağılımı</h5>
+                    </div>
+
+                    <div class="dashboard-chart-body">
+                        @foreach (var item in Model.DurumDagilimi)
+                        {
+                            var oran = (item.Sayi * 100) / maxDurum;
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>@item.Ad</span>
+                                    <strong>@item.Sayi</strong>
+                                </div>
+
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: @oran%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card shadow text-center">
-                <div class="card-body">
-                    <h4>İnceleniyor</h4>
-                    <h3>@Model.InceleniyorTalep</h3>
+        <div class="panel-page-header mt-4">
+            <div>
+                <span class="panel-page-label">Harita Görünümü</span>
+                <h2>Şikâyet Haritası</h2>
+                <p>Konum bilgisi olan aktif talepler müdürlüklere göre farklı renklerle gösterilmektedir.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 mb-4">
+                <div class="dashboard-map-card">
+                    <div id="dashboardMap"></div>
+
+                    <div class="mt-3 map-legend">
+                        <span class="badge bg-danger me-2 mb-2">Fen İşleri</span>
+                        <span class="badge bg-success me-2 mb-2">Temizlik İşleri</span>
+                        <span class="badge bg-primary me-2 mb-2">Park ve Bahçeler</span>
+                        <span class="badge me-2 mb-2" style="background-color: orange;">Zabıta</span>
+                        <span class="badge me-2 mb-2" style="background-color: purple;">Ulaşım Hizmetleri</span>
+                        <span class="badge bg-secondary mb-2">Diğer</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow map-detail-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Şikâyet Detayları</h5>
+                    </div>
+
+                    <div class="card-body" id="haritaDetayPanel">
+                        <p class="text-muted">
+                            Haritadaki renkli noktalardan birine tıklayarak şikâyet detaylarını görüntüleyebilirsiniz.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card shadow text-center">
-                <div class="card-body">
-                    <h4>Tamamlandı</h4>
-                    <h3>@Model.TamamlananTalep</h3>
-                </div>
-            </div>
-        </div>
     </div>
-
-    <div class="row mt-4">
-        <div class="col-md-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h5>Müdürlüklere Göre Talep Dağılımı</h5>
-                </div>
-
-                <div class="card-body">
-                    @foreach (var item in Model.MudurlukDagilimi)
-                    {
-                        var oran = (item.Sayi * 100) / maxMudurluk;
-
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span>@item.Ad</span>
-                                <strong>@item.Sayi</strong>
-                            </div>
-
-                            <div class="progress">
-                                <div class="progress-bar bg-primary" style="width: @oran%"></div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h5>Kategorilere Göre Talep Dağılımı</h5>
-                </div>
-
-                <div class="card-body">
-                    @foreach (var item in Model.KategoriDagilimi)
-                    {
-                        var oran = (item.Sayi * 100) / maxKategori;
-
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span>@item.Ad</span>
-                                <strong>@item.Sayi</strong>
-                            </div>
-
-                            <div class="progress">
-                                <div class="progress-bar bg-success" style="width: @oran%"></div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h5>Duruma Göre Talep Dağılımı</h5>
-                </div>
-
-                <div class="card-body">
-                    @foreach (var item in Model.DurumDagilimi)
-                    {
-                        var oran = (item.Sayi * 100) / maxDurum;
-
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span>@item.Ad</span>
-                                <strong>@item.Sayi</strong>
-                            </div>
-
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" style="width: @oran%"></div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <hr />
-
-    <h4 class="mt-4">Şikayet Haritası</h4>
-    <p class="text-muted">
-        Konum bilgisi olan aktif talepler harita üzerinde müdürlüklere göre farklı renklerle gösterilmektedir.
-    </p>
-
-    <div class="row">
-        <div class="col-md-8 mb-4">
-            <div id="dashboardMap"></div>
-
-            <div class="mt-3 map-legend">
-                <span class="badge bg-danger me-2 mb-2">Fen İşleri</span>
-                <span class="badge bg-success me-2 mb-2">Temizlik İşleri</span>
-                <span class="badge bg-primary me-2 mb-2">Park ve Bahçeler</span>
-                <span class="badge me-2 mb-2" style="background-color: orange;">Zabıta</span>
-                <span class="badge me-2 mb-2" style="background-color: purple;">Ulaşım Hizmetleri</span>
-                <span class="badge bg-secondary mb-2">Diğer</span>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card shadow map-detail-card">
-                <div class="card-header">
-                    <h5>Şikayet Detayları</h5>
-                </div>
-
-                <div class="card-body" id="haritaDetayPanel">
-                    <p class="text-muted">
-                        Haritadaki renkli noktalardan birine tıklayarak şikayet detaylarını görüntüleyebilirsiniz.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <a asp-controller="Yonetici" asp-action="Index" class="btn btn-secondary">
-        Yönetici Paneline Dön
-    </a>
-</div>
+</section>
 
 @section Scripts {
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+    <script type="application/json" id="haritaTalepleriData">
+        @Html.Raw(haritaTalepleriJson)
+    </script>
+
     <script>
-        var talepler = @Html.Raw(haritaTalepleriJson);
+        var talepler = JSON.parse(document.getElementById("haritaTalepleriData").textContent);
 
         var baslangicEnlem = 36.9914;
         var baslangicBoylam = 35.3308;
